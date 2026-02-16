@@ -4,7 +4,7 @@
       <input
         v-model="query"
         type="text"
-        placeholder="Поиск фильма..."
+        placeholder="Поиск фильма или сериала..."
         @input="debouncedSearch"
         :disabled="adding"
       />
@@ -32,6 +32,7 @@
         <div class="result-info">
           <div class="result-title">{{ movie.title }}</div>
           <div class="result-meta">
+            <span v-if="movie.media_type === 'tv'" class="result-type">сериал</span>
             <span class="result-rating">{{ movie.rating.toFixed(1) }}</span>
             <span v-if="movie.release_date" class="result-year">
               {{ movie.release_date.substring(0, 4) }}
@@ -91,11 +92,11 @@ export default {
       this.error = ''
 
       try {
-        const addedMovie = await addMovie(movie.tmdb_id)
+        const addedMovie = await addMovie(movie.tmdb_id, movie.media_type || 'movie')
         this.clearSearch()
         this.$emit('movie-added', addedMovie)
       } catch (e) {
-        this.error = 'Ошибка добавления фильма'
+        this.error = 'Ошибка добавления'
       } finally {
         this.adding = false
       }
@@ -205,6 +206,16 @@ input:focus {
   margin-top: 4px;
   font-size: 12px;
   color: #888;
+}
+
+.result-type {
+  background: #4a4a6a;
+  color: #fff;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 10px;
+  text-transform: uppercase;
+  margin-right: 6px;
 }
 
 .result-rating {

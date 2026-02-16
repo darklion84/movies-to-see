@@ -21,6 +21,7 @@ class Movie(Base):
     rating = Column(Float)
     release_year = Column(Integer, nullable=True)
     actors = Column(String, nullable=True)
+    media_type = Column(String, default="movie")  # movie or tv
     watched = Column(Boolean, default=False)
     impression = Column(String, nullable=True)  # liked, ok, disliked
     added_at = Column(DateTime, default=datetime.utcnow)
@@ -40,7 +41,8 @@ def get_db():
 
 
 def create_movie(db, tmdb_id: int, title: str, description: str, poster_url: str,
-                 rating: float, release_year: int = None, actors: str = None):
+                 rating: float, release_year: int = None, actors: str = None,
+                 media_type: str = "movie"):
     existing = db.query(Movie).filter(Movie.tmdb_id == tmdb_id).first()
     if existing:
         return existing
@@ -52,7 +54,8 @@ def create_movie(db, tmdb_id: int, title: str, description: str, poster_url: str
         poster_url=poster_url,
         rating=rating,
         release_year=release_year,
-        actors=actors
+        actors=actors,
+        media_type=media_type
     )
     db.add(movie)
     db.commit()

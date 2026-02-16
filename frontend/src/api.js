@@ -62,10 +62,10 @@ async function getMovies() {
   return request('/movies')
 }
 
-async function addMovie(tmdbId) {
+async function addMovie(tmdbId, mediaType = 'movie') {
   return request('/movies', {
     method: 'POST',
-    body: JSON.stringify({ tmdb_id: tmdbId })
+    body: JSON.stringify({ tmdb_id: tmdbId, media_type: mediaType })
   })
 }
 

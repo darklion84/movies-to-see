@@ -16,11 +16,12 @@ def mock_env(monkeypatch):
 async def test_search_movie(mock_env, httpx_mock):
     httpx_mock.add_response(
         method="GET",
-        path="/3/search/movie",
+        path="/3/search/multi",
         json={
             "results": [
                 {
                     "id": 157336,
+                    "media_type": "movie",
                     "title": "Интерстеллар",
                     "overview": "Фильм о космосе",
                     "poster_path": "/poster.jpg",
@@ -36,30 +37,34 @@ async def test_search_movie(mock_env, httpx_mock):
     assert results[0]["tmdb_id"] == 157336
     assert results[0]["title"] == "Интерстеллар"
     assert results[0]["rating"] == 8.6
+    assert results[0]["media_type"] == "movie"
 
 
 @pytest.mark.asyncio
-async def test_search_movie_russian(mock_env, httpx_mock):
+async def test_search_tv_show(mock_env, httpx_mock):
     httpx_mock.add_response(
         method="GET",
-        path="/3/search/movie",
+        path="/3/search/multi",
         json={
             "results": [
                 {
-                    "id": 157336,
-                    "title": "Интерстеллар",
-                    "overview": "Фильм о космосе",
+                    "id": 94997,
+                    "media_type": "tv",
+                    "name": "Дом Дракона",
+                    "overview": "Сериал о Таргариенах",
                     "poster_path": "/poster.jpg",
-                    "vote_average": 8.6,
-                    "release_date": "2014-11-05"
+                    "vote_average": 8.4,
+                    "first_air_date": "2022-08-21"
                 }
             ]
         }
     )
 
-    results = await search_movies("Интерстеллар")
+    results = await search_movies("House of the Dragon")
     assert len(results) == 1
-    assert results[0]["title"] == "Интерстеллар"
+    assert results[0]["title"] == "Дом Дракона"
+    assert results[0]["media_type"] == "tv"
+    assert results[0]["release_date"] == "2022-08-21"
 
 
 @pytest.mark.asyncio
@@ -76,17 +81,40 @@ async def test_get_movie_details(mock_env, httpx_mock):
         }
     )
 
-    result = await get_movie_details(157336)
+    result = await get_movie_details(157336, "movie")
     assert result is not None
     assert result["tmdb_id"] == 157336
     assert result["poster_url"] == "https://image.tmdb.org/t/p/w500/poster.jpg"
+    assert result["media_type"] == "movie"
+
+
+@pytest.mark.asyncio
+async def test_get_tv_details(mock_env, httpx_mock):
+    httpx_mock.add_response(
+        method="GET",
+        path="/3/tv/94997",
+        json={
+            "id": 94997,
+            "name": "Дом Дракона",
+            "overview": "Сериал о Таргариенах",
+            "poster_path": "/poster.jpg",
+            "vote_average": 8.4,
+            "first_air_date": "2022-08-21"
+        }
+    )
+
+    result = await get_movie_details(94997, "tv")
+    assert result is not None
+    assert result["tmdb_id"] == 94997
+    assert result["title"] == "Дом Дракона"
+    assert result["media_type"] == "tv"
 
 
 @pytest.mark.asyncio
 async def test_search_no_results(mock_env, httpx_mock):
     httpx_mock.add_response(
         method="GET",
-        path="/3/search/movie",
+        path="/3/search/multi",
         json={"results": []}
     )
 

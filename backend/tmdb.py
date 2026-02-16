@@ -17,7 +17,7 @@ async def search_movies(query: str, language: str = "ru-RU") -> list[dict]:
     api_key = get_api_key()
     async with httpx.AsyncClient() as client:
         response = await client.get(
-            f"{TMDB_BASE_URL}/search/movie",
+            f"{TMDB_BASE_URL}/search/multi",
             params={
                 "api_key": api_key,
                 "query": query,
@@ -29,24 +29,39 @@ async def search_movies(query: str, language: str = "ru-RU") -> list[dict]:
         data = response.json()
 
         results = []
-        for movie in data.get("results", [])[:10]:
-            poster_path = movie.get("poster_path")
+        for item in data.get("results", []):
+            media_type = item.get("media_type")
+            if media_type not in ("movie", "tv"):
+                continue
+
+            poster_path = item.get("poster_path")
+            # TV shows use 'name' and 'first_air_date', movies use 'title' and 'release_date'
+            title = item.get("title") or item.get("name", "")
+            release_date = item.get("release_date") or item.get("first_air_date", "")
+
             results.append({
-                "tmdb_id": movie["id"],
-                "title": movie["title"],
-                "description": movie.get("overview", ""),
+                "tmdb_id": item["id"],
+                "title": title,
+                "description": item.get("overview", ""),
                 "poster_url": f"{TMDB_IMAGE_BASE_URL}{poster_path}" if poster_path else None,
-                "rating": movie.get("vote_average", 0),
-                "release_date": movie.get("release_date", "")
+                "rating": item.get("vote_average", 0),
+                "release_date": release_date,
+                "media_type": media_type
             })
+
+            if len(results) >= 10:
+                break
+
         return results
 
 
-async def get_movie_details(tmdb_id: int, language: str = "ru-RU") -> Optional[dict]:
+async def get_movie_details(tmdb_id: int, media_type: str = "movie", language: str = "ru-RU") -> Optional[dict]:
     api_key = get_api_key()
+    endpoint = "movie" if media_type == "movie" else "tv"
+
     async with httpx.AsyncClient() as client:
         response = await client.get(
-            f"{TMDB_BASE_URL}/movie/{tmdb_id}",
+            f"{TMDB_BASE_URL}/{endpoint}/{tmdb_id}",
             params={
                 "api_key": api_key,
                 "language": language,
@@ -56,23 +71,27 @@ async def get_movie_details(tmdb_id: int, language: str = "ru-RU") -> Optional[d
         if response.status_code == 404:
             return None
         response.raise_for_status()
-        movie = response.json()
+        item = response.json()
 
-        poster_path = movie.get("poster_path")
-        release_date = movie.get("release_date", "")
+        poster_path = item.get("poster_path")
+
+        # TV shows use 'name' and 'first_air_date', movies use 'title' and 'release_date'
+        title = item.get("title") or item.get("name", "")
+        release_date = item.get("release_date") or item.get("first_air_date", "")
         release_year = int(release_date[:4]) if release_date and len(release_date) >= 4 else None
 
         actors = []
-        credits = movie.get("credits", {})
+        credits = item.get("credits", {})
         for cast in credits.get("cast", [])[:5]:
             actors.append(cast.get("name", ""))
 
         return {
-            "tmdb_id": movie["id"],
-            "title": movie["title"],
-            "description": movie.get("overview", ""),
+            "tmdb_id": item["id"],
+            "title": title,
+            "description": item.get("overview", ""),
             "poster_url": f"{TMDB_IMAGE_BASE_URL}{poster_path}" if poster_path else None,
-            "rating": movie.get("vote_average", 0),
+            "rating": item.get("vote_average", 0),
             "release_year": release_year,
-            "actors": ", ".join(actors) if actors else None
+            "actors": ", ".join(actors) if actors else None,
+            "media_type": media_type
         }

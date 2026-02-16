@@ -43,6 +43,7 @@ class LoginResponse(BaseModel):
 
 class AddMovieRequest(BaseModel):
     tmdb_id: int
+    media_type: str = "movie"
 
 
 class MovieResponse(BaseModel):
@@ -54,6 +55,7 @@ class MovieResponse(BaseModel):
     rating: float
     release_year: int | None = None
     actors: str | None = None
+    media_type: str = "movie"
     watched: bool = False
     impression: str | None = None
     watched_at: datetime | None = None
@@ -73,6 +75,7 @@ class SearchResult(BaseModel):
     poster_url: str | None
     rating: float
     release_date: str
+    media_type: str = "movie"
 
 
 @app.post("/api/login", response_model=LoginResponse)
@@ -101,7 +104,7 @@ async def add_movie(
     db: Session = Depends(get_db),
     _: bool = Depends(get_current_user)
 ):
-    movie_details = await get_movie_details(request.tmdb_id)
+    movie_details = await get_movie_details(request.tmdb_id, request.media_type)
     if not movie_details:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -116,7 +119,8 @@ async def add_movie(
         poster_url=movie_details["poster_url"],
         rating=movie_details["rating"],
         release_year=movie_details.get("release_year"),
-        actors=movie_details.get("actors")
+        actors=movie_details.get("actors"),
+        media_type=movie_details.get("media_type", "movie")
     )
     return movie
 
