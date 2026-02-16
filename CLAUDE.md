@@ -2,6 +2,14 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## Post-Feature Checklist
+
+After completing any feature, ALWAYS:
+1. **Update tests** — add/update tests for new functionality
+2. **Create migrations** — if DB schema changed, add SQL migration script to `backend/migrations/`
+3. **Update documentation** — update this file and README if needed
+4. **Preserve existing data** — NEVER drop tables or delete data; use ALTER TABLE for schema changes
+
 ## Commands
 
 ### Development
