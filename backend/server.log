@@ -1,0 +1,11 @@
+INFO:     Started server process [45685]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+ERROR:    [Errno 48] error while attempting to bind on address ('0.0.0.0INFO:     127.0.0.1:63837 - "GET / HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63839 - "GET /assets/index-CvFmgL72.css HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63837 - "GET /assets/index-_D1vcElN.js HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63837 - "GET /api/movies HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63924 - "GET / HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63926 - "GET /assets/index-BP78Ejy3.css HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63924 - "GET /assets/index-C37GNuls.js HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63924 - "GET /api/movies HTTP/1.1" 200 OK
