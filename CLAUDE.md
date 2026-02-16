@@ -51,6 +51,14 @@ cd frontend && npm test
 3. User marks watched → `/api/movies/{id}/watched` PATCH with impression (liked/ok/disliked)
 4. Movie cards show watch date and impression icon for watched movies
 
+## Migrations
+
+After pulling updates, run any new migrations:
+```bash
+cd backend
+sqlite3 movies.db < migrations/001_add_media_type.sql
+```
+
 ## Configuration
 
 Backend requires `backend/.env`:
